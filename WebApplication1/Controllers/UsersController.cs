@@ -16,11 +16,11 @@ namespace WebApplication1.Controllers
     [ApiController]
     public class UsersController : ControllerBase
     {
-        private readonly IRepository<User> _usersContext;
+        private readonly IUserRepository<User> _usersContext;
         private readonly ILogger<UsersController> _logger;
         private readonly IMapper _mapper;
 
-        public UsersController(IRepository<User> repository, ILogger<UsersController> logger, IMapper mapper)
+        public UsersController(IUserRepository<User> repository, ILogger<UsersController> logger, IMapper mapper)
         {
             _usersContext = repository;
             _logger = logger;
@@ -101,13 +101,20 @@ namespace WebApplication1.Controllers
                 _logger.LogError("Id does not exist");
                 return NotFound();
             }
-            
+
             await _usersContext.Delete(id);
             _logger.LogInformation("User deleted");
 
             return NoContent();
         }
 
+        [HttpGet("maxOrder")]
+        public async Task<UserDTO> GetMaxOrder()
+        {
+            var user = await _usersContext.GetMaxOrder();
+            var userDto = _mapper.Map<UserDTO>(user);
+            return userDto;
+        }
         private bool Exists(int id)
         {
             return _usersContext.Exists(id);

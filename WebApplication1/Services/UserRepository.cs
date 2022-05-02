@@ -8,7 +8,7 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace WebApplication1.Services
 {
-    public class UserRepository : IRepository<User>
+    public class UserRepository : IUserRepository<User>
     {
         private readonly MyDbContext _context;
         public UserRepository(MyDbContext context)
@@ -44,7 +44,12 @@ namespace WebApplication1.Services
             _context.Entry(entity).State = EntityState.Modified;
             return await _context.SaveChangesAsync();
         }
-
+        public async Task<User> GetMaxOrder()
+        {
+            var user = await _context.Users.Include(u => u.Orders).ThenInclude(o => o.Products).
+                            OrderByDescending(u => u.Orders.Count).FirstAsync();
+            return user;
+        }
         public bool Exists(int id)
         {
             return _context.Users.Any(e => e.Id == id);

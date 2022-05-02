@@ -32,7 +32,7 @@ namespace WebApplication1
                                                                    Newtonsoft.Json.ReferenceLoopHandling.Ignore);
             services.AddDbContext<MyDbContext>(optionsBuilder => optionsBuilder.UseSqlServer(Configuration.GetConnectionString("MyDB")));
             services.AddAutoMapper(typeof(AutoMapperProfiles).Assembly);
-            services.AddScoped<IRepository<User>, UserRepository>();
+            services.AddScoped<IUserRepository<User>, UserRepository>();
             services.AddScoped<IRepository<Product>, ProductRepository>();
             services.AddScoped<IRepository<Order>, OrderRepository>();
             
