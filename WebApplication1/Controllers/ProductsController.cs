@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using AutoMapper;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using System.Collections.Generic;
 using System.Threading.Tasks;
@@ -14,19 +15,24 @@ namespace WebApplication1.Controllers
     public class ProductsController : ControllerBase
     {
         private readonly IRepository<Product> _productsContext;
+        private readonly IMapper _mapper;
 
-        public ProductsController(IRepository<Product> repository)
+        public ProductsController(IRepository<Product> repository, IMapper mapper)
         {
             _productsContext = repository;
+            _mapper = mapper;
         }
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<Product>>> Get()
+        public async Task<IEnumerable<ProductDTO>> Get()
         {
-            return await _productsContext.GetAll();
+            var products = await _productsContext.GetAll();
+            var productsDTO = _mapper.Map<IEnumerable<ProductDTO>>(products);
+            return productsDTO;
+
         }
 
         [HttpGet("{id}")]
-        public async Task<ActionResult<Product>> Get(int id)
+        public async Task<ActionResult<ProductDTO>> Get(int id)
         {
             var user = await _productsContext.Get(id);
 
@@ -35,7 +41,7 @@ namespace WebApplication1.Controllers
                 return NotFound();
             }
 
-            return user;
+            return Ok(user);
         }
 
         [HttpPost]

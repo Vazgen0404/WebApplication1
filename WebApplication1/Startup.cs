@@ -5,7 +5,9 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.OpenApi.Models;
+using WebApplication1.AutoMapper;
 using WebApplication1.Context;
+using WebApplication1.Middlewares;
 using WebApplication1.Models.Orders;
 using WebApplication1.Models.Products;
 using WebApplication1.Models.Users;
@@ -29,9 +31,11 @@ namespace WebApplication1
             services.AddControllersWithViews().AddNewtonsoftJson(options => options.SerializerSettings.ReferenceLoopHandling =
                                                                    Newtonsoft.Json.ReferenceLoopHandling.Ignore);
             services.AddDbContext<MyDbContext>(optionsBuilder => optionsBuilder.UseSqlServer(Configuration.GetConnectionString("MyDB")));
+            services.AddAutoMapper(typeof(AutoMapperProfiles).Assembly);
             services.AddScoped<IRepository<User>, UserRepository>();
             services.AddScoped<IRepository<Product>, ProductRepository>();
             services.AddScoped<IRepository<Order>, OrderRepository>();
+            
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -41,6 +45,7 @@ namespace WebApplication1
             {
                 app.UseDeveloperExceptionPage();
             }
+            app.UseMiddleware<ExceptionMiddlware>();
 
             app.UseHttpsRedirection();
 

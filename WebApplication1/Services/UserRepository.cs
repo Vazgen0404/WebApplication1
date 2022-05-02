@@ -29,12 +29,12 @@ namespace WebApplication1.Services
             return await _context.SaveChangesAsync();
         }
 
-        public async Task<ActionResult<User>> Get(int id)
+        public async Task<User> Get(int id)
         {
             return await _context.Users.Include(u => u.Orders).ThenInclude(o => o.Products).FirstOrDefaultAsync(u => u.Id == id);
         }
 
-        public async Task<ActionResult<IEnumerable<User>>> GetAll()
+        public async Task<IEnumerable<User>> GetAll()
         {
             return await _context.Users.Include(u => u.Orders).ThenInclude(o => o.Products).ToListAsync();
         }

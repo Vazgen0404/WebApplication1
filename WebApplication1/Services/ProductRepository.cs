@@ -29,14 +29,14 @@ namespace WebApplication1.Services
             return await _context.SaveChangesAsync();
         }
 
-        public async Task<ActionResult<Product>> Get(int id)
+        public async Task<Product> Get(int id)
         {
             return await _context.Products.FirstOrDefaultAsync(u => u.Id == id);
         }
 
-        public async Task<ActionResult<IEnumerable<Product>>> GetAll()
+        public async Task<IEnumerable<Product>> GetAll()
         {
-            return await _context.Products.ToListAsync();
+            return await _context.Products.Include(p => p.Order).ToListAsync();
         }
 
         public async Task<int> Update(Product entity)

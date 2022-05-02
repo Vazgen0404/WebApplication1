@@ -1,5 +1,7 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using AutoMapper;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
@@ -15,54 +17,70 @@ namespace WebApplication1.Controllers
     public class UsersController : ControllerBase
     {
         private readonly IRepository<User> _usersContext;
+        private readonly ILogger<UsersController> _logger;
+        private readonly IMapper _mapper;
 
-        public UsersController(IRepository<User> repository)
+        public UsersController(IRepository<User> repository, ILogger<UsersController> logger, IMapper mapper)
         {
             _usersContext = repository;
+            _logger = logger;
+            _mapper = mapper;
         }
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<User>>> Get()
+        public async Task<ActionResult<IEnumerable<UserDTO>>> Get()
         {
-            return await _usersContext.GetAll();
+            var users = await _usersContext.GetAll();
+            var usersDto = _mapper.Map<IEnumerable<UserDTO>>(users);
+
+            return Ok(usersDto);
         }
 
         [HttpGet("{id}")]
-        public async Task<ActionResult<User>> Get(int id)
+        public async Task<ActionResult<UserDTO>> Get(int id)
         {
             var user = await _usersContext.Get(id);
 
             if (user == null)
             {
+                _logger.LogError("User Not Found");
                 return NotFound();
             }
+            var userDto = _mapper.Map<UserDTO>(user);
 
-            return user;
+            return Ok(userDto);
         }
 
         [HttpPost]
-        public async Task<ActionResult<User>> Post([FromBody] User user)
+        public async Task<ActionResult<UserDTO>> Post([FromBody] UserDTO userDto)
         {
+            var user = _mapper.Map<User>(userDto);
             await _usersContext.Add(user);
 
-            return CreatedAtAction("Get", new { id = user.Id }, user);
+            _logger.LogInformation("User created");
+            return CreatedAtAction("Get", new { id = user.Id }, userDto);
         }
 
         [HttpPut("{id}")]
-        public async Task<IActionResult> Put(int id, [FromBody] User user)
+        public async Task<IActionResult> Put(int id, [FromBody] UserDTO userDto)
         {
-            if (id != user.Id)
+            if (id != userDto.Id)
             {
+                _logger.LogError("Ids dont match ");
+
                 return BadRequest();
             }
-            
+            var user = _mapper.Map<User>(userDto);
             try
             {
                 await _usersContext.Update(user);
+                _logger.LogInformation("User updated");
+
             }
             catch (DbUpdateConcurrencyException)
             {
                 if (!Exists(id))
                 {
+                    _logger.LogError("Id does not exist");
                     return NotFound();
                 }
                 else
@@ -80,10 +98,12 @@ namespace WebApplication1.Controllers
             var user = await _usersContext.Get(id);
             if (user == null)
             {
+                _logger.LogError("Id does not exist");
                 return NotFound();
             }
             
             await _usersContext.Delete(id);
+            _logger.LogInformation("User deleted");
 
             return NoContent();
         }

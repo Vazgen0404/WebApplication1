@@ -25,16 +25,16 @@ namespace WebApplication1.Services
         {
             var Order = _context.Orders.FirstOrDefault(x => x.Id == id);
 
-            _context.Orders.Remove(Order);
+            _context.Orders.Remove((Order)Order);
             return await _context.SaveChangesAsync();
         }
 
-        public async Task<ActionResult<Order>> Get(int id)
+        public async Task<Order> Get(int id)
         {
             return await _context.Orders.Include(u => u.Products).FirstOrDefaultAsync(u => u.Id == id);
         }
 
-        public async Task<ActionResult<IEnumerable<Order>>> GetAll()
+        public async Task<IEnumerable<Order>> GetAll()
         {
             return await _context.Orders.Include(u => u.Products).ToListAsync();
         }

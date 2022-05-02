@@ -1,6 +1,9 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using AutoMapper;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using WebApplication1.Models.Orders;
 using WebApplication1.Services;
@@ -14,15 +17,20 @@ namespace WebApplication1.Controllers
     public class OrdersController : ControllerBase
     {
         private readonly IRepository<Order> _ordersContext;
+        private readonly IMapper _mapper;
 
-        public OrdersController(IRepository<Order> repository)
+        public OrdersController(IRepository<Order> repository, IMapper mapper)
         {
             _ordersContext = repository;
+            _mapper = mapper;
         }
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<Order>>> Get()
+        public async Task<IEnumerable<Order>> Get()
         {
-            return await _ordersContext.GetAll();
+            var orders = await _ordersContext.GetAll();
+            var ordersDetailsDTOs = _mapper.Map<IEnumerable<Order>>(orders);
+
+            return ordersDetailsDTOs;
         }
 
         [HttpGet("{id}")]
@@ -34,29 +42,34 @@ namespace WebApplication1.Controllers
             {
                 return NotFound();
             }
+            var orderDto = _mapper.Map<Order>(Order);
 
-            return Order;
+            return orderDto;
         }
 
         [HttpPost]
-        public async Task<ActionResult<Order>> Post([FromBody] Order user)
+        public async Task<ActionResult<OrderDTO>> Post([FromBody] OrderDTO orderDto)
         {
-            await _ordersContext.Add(user);
+            var order = _mapper.Map<Order>(orderDto);
+            order.Date = DateTime.Now;
+            
+            await _ordersContext.Add(order);
 
-            return CreatedAtAction("Get", new { id = user.Id }, user);
+            return CreatedAtAction("Get", new { id = order.Id }, orderDto);
         }
 
         [HttpPut("{id}")]
-        public async Task<IActionResult> Put(int id, [FromBody] Order user)
+        public async Task<IActionResult> Put(int id, [FromBody] OrderDTO orderDto)
         {
-            if (id != user.Id)
+            if (id != orderDto.Id)
             {
                 return BadRequest();
             }
+            var order = _mapper.Map<Order>(orderDto);
 
             try
             {
-                await _ordersContext.Update(user);
+                await _ordersContext.Update(order);
             }
             catch (DbUpdateConcurrencyException)
             {
