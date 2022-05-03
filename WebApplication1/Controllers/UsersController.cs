@@ -109,9 +109,9 @@ namespace WebApplication1.Controllers
         }
 
         [HttpGet("maxOrder")]
-        public async Task<UserDTO> GetMaxOrder()
+        public async Task<UserDTO> UserWithMaxOrders()
         {
-            var user = await _usersContext.GetMaxOrder();
+            var user = await _usersContext.UserWithMaxOrders();
             var userDto = _mapper.Map<UserDTO>(user);
             return userDto;
         }

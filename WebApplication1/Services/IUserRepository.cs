@@ -4,6 +4,6 @@ namespace WebApplication1.Services
 {
     public interface IUserRepository<User> : IRepository<User> where User : class
     {
-        Task<User> GetMaxOrder();
+        Task<User> UserWithMaxOrders();
     }
 }

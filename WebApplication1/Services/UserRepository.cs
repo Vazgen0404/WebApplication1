@@ -44,7 +44,7 @@ namespace WebApplication1.Services
             _context.Entry(entity).State = EntityState.Modified;
             return await _context.SaveChangesAsync();
         }
-        public async Task<User> GetMaxOrder()
+        public async Task<User> UserWithMaxOrders()
         {
             var user = await _context.Users.Include(u => u.Orders).ThenInclude(o => o.Products).
                             OrderByDescending(u => u.Orders.Count).FirstAsync();
